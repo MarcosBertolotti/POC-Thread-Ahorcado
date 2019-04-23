@@ -35,7 +35,6 @@ public class Jugador implements Runnable{
         if(errores == vida)
             System.out.println("El jugador " + nombre.toUpperCase() + " agoto todas sus vidas!, ya no puede continuar");
 
-
     }
 
     public String getNombre() {

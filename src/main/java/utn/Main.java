@@ -8,13 +8,16 @@ public class Main {
     public static void main(String args[]){
 
         ConexionBD conexion = new ConexionBD();
-        conexion.crearBD();
-
         List<Character> abecedario = new LinkedList<Character>();
-        abecedario = addLetras(abecedario);
+        String palabra;
+        StringBuffer stringBuffer = new StringBuffer(); // Contendra Guiones Bajos, luego se remplazan por letras a medica que se encuentren.
 
-        String palabra = conexion.getPalabraBD();
-        Contenedor contenedor = new Contenedor(palabra,abecedario);
+        conexion.crearBD();
+        abecedario = addLetras(abecedario);
+        palabra = conexion.getPalabraBD();
+        stringBuffer = addGuionesBajosToStringBuffer(stringBuffer,palabra);
+
+        Contenedor contenedor = new Contenedor(palabra,abecedario,stringBuffer);
 
         System.out.println("PALABRA SELECCIONADA: " + palabra.toUpperCase() + "\n");
 
@@ -33,6 +36,14 @@ public class Main {
         return abecedario;
     }
 
+    // agrega guiones bajos segun el largo de la palabra.
+    public static StringBuffer addGuionesBajosToStringBuffer(StringBuffer stringBuffer, String palabra){
+
+        for(int i = 0; i < palabra.length(); i++)
+            stringBuffer.append("_");
+
+        return stringBuffer;
+    }
 
 
 }

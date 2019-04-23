@@ -10,10 +10,12 @@ public class Contenedor {
     private int contAsertadas = 0;           // cantidad de letras asertadas, para comparar con la cantidad total de letras de palabra.
     private String palabra;
     private List<Character> abecedario;
+    private StringBuffer stringBuffer;
 
-    public Contenedor(String palabra,List<Character> abecedario){
+    public Contenedor(String palabra,List<Character> abecedario, StringBuffer stringBuffer){
         this.palabra = palabra.toLowerCase();
         this.abecedario = abecedario;
+        this.stringBuffer = stringBuffer;
     }
 
     public synchronized int jugar(Jugador j,Random rd){
@@ -33,23 +35,25 @@ public class Contenedor {
         while(encontrado > 0 && !ganador){
 
             letra = seleccionarLetra(rd);
-            System.out.println(j.getNombre() + " selecciono la letra '" + letra + "'");
+            System.out.println(j.getNombre().toUpperCase() + " selecciono la letra '" + letra + "'");
 
-            encontrado = verificarLetra(letra);
-
-            if(encontrado > 0)
-                System.out.println("La letra '" + letra  + "' esta dentro de la palabra!, vuelve a jugar.");
-            else
-                System.out.println("La letra '" + letra  + "' no pertenece a la palabra.");
+            encontrado = buscarLetra(letra);
 
             verificarGanador();
 
-            if(ganador) {
+            if(ganador){
                 j.setResultado(ganador);
-                System.out.println("\nSe completo la palabra '" + palabra.toUpperCase() + "', " + "El ganador es: " + j.getNombre().toUpperCase());
+                System.out.println("La letra '" + letra + "' esta dentro de la palabra!");
+                System.out.println("\nSe completo la palabra '" + palabra.toUpperCase() + "', " + "El ganador es: " + j.getNombre().toUpperCase() + "!");
 
                 new ConexionBD().guardarResultadoBD(j.getNombre(),palabra);
             }
+            else if(encontrado > 0) {
+                System.out.println("La letra '" + letra + "' esta dentro de la palabra!, vuelve a jugar " + j.getNombre().toUpperCase());
+                System.out.println("Encontrado: " + stringBuffer.toString().toUpperCase());
+            }
+            else
+                System.out.println("La letra '" + letra  + "' no pertenece a la palabra.");
 
             System.out.println("**********************");
         }
@@ -60,32 +64,38 @@ public class Contenedor {
         return encontrado;
     }
 
-    //selecciona la letra aleatoreamente de la lista y la remueve.
+
+    // selecciona la letra aleatoreamente de la lista y la remueve.
     public char seleccionarLetra(Random rd){
         return abecedario.remove(rd.nextInt(abecedario.size()));
     }
 
-    // verifica si la letra esta dentro de la palabra
-    private int verificarLetra(char letra){
-        String auxPalabra = palabra;
+
+    // método para calcular el número de veces que se repite un carácter en un String
+    public int buscarLetra(char letra) {
         int cont = 0;
+        int index = palabra.indexOf(letra); // retorna la posicion si lo encuentra, si no -1
 
-        while (auxPalabra.indexOf(letra) > -1) { // si la letra esta varias veces en la palabra, las cuenta.
-            auxPalabra = auxPalabra.substring(auxPalabra.indexOf(letra) + 1);
+        while (index != -1) {
+            agregarLetraEncontrada(index,letra);
+
+            index = palabra.indexOf(letra, index + 1); //se sigue buscando a partir de la posición siguiente a la encontrada
+
             cont++;
+            contAsertadas++;
         }
-        if(cont > 0)
-            contAsertadas += cont;
-
         return cont;
+    }
+
+    public void agregarLetraEncontrada(int index, char letra){
+
+        stringBuffer.replace(index,index+1, String.valueOf(letra));
     }
 
     // verifica si se encontraron todas las letras de la palabra.
     private void verificarGanador(){
-        if(contAsertadas == palabra.length()) {
+        if(contAsertadas == palabra.length())
             ganador = Boolean.TRUE;
-        }
-
     }
 
     public boolean getGanador() {
